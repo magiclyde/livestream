@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Go SFU 直播 Demo</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Go SFU 直播 Demo</h1>
+    <p>浏览器推流 → Go 服务转发 → 浏览器播放（WebRTC）</p>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>加入房间</h2>
+      <input id="room" type="text" placeholder="房间号，如 demo" />
+      <div class="row">
+        <button id="publish">开始直播（主播）</button>
+        <button id="watch">观看直播（观众）</button>
+        <button id="leave" disabled>离开房间</button>
+      </div>
+      <p id="status" class="status">未连接…</p>
+    </section>
+
+    <section class="videos">
+      <div class="video-box">
+        <h3>本地预览（主播）</h3>
+        <video id="preview" autoplay muted playsinline></video>
+      </div>
+      <div class="video-box">
+        <h3>直播间画面（观众）</h3>
+        <video id="remote" autoplay playsinline></video>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

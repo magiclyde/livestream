@@ -1,0 +1,131 @@
+:root {
+  --bg: #101418;
+  --panel: #1a2026;
+  --accent: #4cc2ff;
+  --text: #e6edf3;
+  --muted: #8b98a5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+header {
+  padding: 24px 32px 8px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+header p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+main {
+  padding: 16px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid #2a323b;
+  border-radius: 10px;
+  padding: 16px 20px;
+  max-width: 760px;
+}
+
+.panel h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid #2a323b;
+  background: #11161b;
+  color: var(--text);
+  font-size: 14px;
+}
+
+button {
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid #2a323b;
+  background: #232c34;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+#publish {
+  background: #164b63;
+  border-color: #1d5f7c;
+}
+
+.status {
+  margin: 12px 0 0;
+  min-height: 20px;
+  color: var(--muted);
+  font-size: 13px;
+  font-family: ui-monospace, "Cascadia Code", monospace;
+}
+
+.videos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  max-width: 960px;
+}
+
+.video-box {
+  background: var(--panel);
+  border: 1px solid #2a323b;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.video-box h3 {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #0a0d10;
+}
