@@ -64,6 +64,16 @@ func (p *Peer) Close() {
 	})
 }
 
+// Closed 报告对端是否已关闭，供回调里做幂等守卫。
+func (p *Peer) Closed() bool {
+	select {
+	case <-p.closedCh:
+		return true
+	default:
+		return false
+	}
+}
+
 func (p *Peer) addSender(relayID string, s *webrtc.RTPSender) {
 	p.sendersMu.Lock()
 	defer p.sendersMu.Unlock()

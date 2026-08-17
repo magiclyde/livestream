@@ -131,13 +131,18 @@ func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
 			}
 
 			peer = sfu.NewPeer(s.peerID(), role, pc, send)
+			peerCopy := peer
+			roomCopy := room
 			if role == sfu.RolePublisher {
 				pc.OnTrack(func(remote *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {
-					room.HandlePublisherTrack(peer, remote)
+					if peerCopy.Closed() {
+						return
+					}
+					roomCopy.HandlePublisherTrack(peerCopy, remote)
 				})
 			}
 			pc.OnConnectionStateChange(func(st webrtc.PeerConnectionState) {
-				s.logf("peer %s (%s) state=%s", peer.ID, role, st)
+				s.logf("peer %s (%s) state=%s", peerCopy.ID, role, st)
 			})
 
 			switch role {

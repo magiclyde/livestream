@@ -55,3 +55,9 @@
   启动正常，`GET /` 返回 200（embed 静态页生效），`GET /api/config` 返回 JSON。
 - 2026-08-14 v1 完成。待办：浏览器实机验证（需本机打开两个标签页）、
   后续扩展见 README「扩展练习」。
+- 2026-08-17 修 bug：离开房间时 panic（`server.go` 连接状态回调空指针）。
+  原因：`OnConnectionStateChange`/`OnTrack` 闭包捕获了外层会变的 `peer`/`room`
+  变量，`leave` 后二者被置 nil，PC 关闭触发回调即空指针解引用。
+  修法：注册回调时用局部副本 `p`/`r` 固定引用，`OnTrack` 增加
+  `Peer.Closed()` 守卫避免离开后误挂新轨道。教训：Pion 回调是异步的，
+  闭包里永远不要引用后续会被置 nil 的外层变量。
