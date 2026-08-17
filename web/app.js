@@ -14,6 +14,7 @@ const state = {
 };
 
 async function init() {
+  updateUI(); // 未加入房间时隐藏视频面板、清空按钮选中态
   $('publish').addEventListener('click', startPublish);
   $('watch').addEventListener('click', startWatch);
   $('leave').addEventListener('click', leave);
@@ -106,7 +107,9 @@ async function startPublish() {
   }
 
   $('preview').srcObject = state.localStream;
+  $('preview').play().catch(() => {}); // iOS Safari 上确保预览开始渲染
   state.role = 'publisher';
+  updateUI();
   state.room = room;
   send({ type: 'join', room, role: 'publisher' });
 }
@@ -117,8 +120,16 @@ async function startWatch() {
   if (!room) return;
 
   state.role = 'viewer';
+  updateUI();
   state.room = room;
   send({ type: 'join', room, role: 'viewer' });
+}
+
+function updateUI() {
+  $('preview-box').style.display = state.role === 'publisher' ? '' : 'none';
+  $('remote-box').style.display = state.role === 'viewer' ? '' : 'none';
+  $('publish').classList.toggle('selected', state.role === 'publisher');
+  $('watch').classList.toggle('selected', state.role === 'viewer');
 }
 
 function requireRoom() {
@@ -151,6 +162,7 @@ function makePeer() {
     // 服务端转发来的轨道（观众角色）
     state.remoteStream.addTrack(ev.track);
     $('remote').srcObject = state.remoteStream;
+    $('remote').play().catch(() => {});
     ev.track.onended = () => {
       state.remoteStream.removeTrack(ev.track);
     };
@@ -182,20 +194,25 @@ function cleanupPeer() {
     state.pc.close();
     state.pc = null;
   }
+  state.remoteStream = null;
+  $('remote').srcObject = null;
+}
+
+function stopLocalStream() {
   if (state.localStream) {
     for (const t of state.localStream.getTracks()) t.stop();
     state.localStream = null;
+    $('preview').srcObject = null;
   }
-  state.remoteStream = null;
-  $('preview').srcObject = null;
-  $('remote').srcObject = null;
 }
 
 function leave() {
   send({ type: 'leave' });
   cleanupPeer();
+  stopLocalStream();
   state.role = null;
   state.room = '';
+  updateUI();
   $('leave').disabled = true;
   setStatus('已离开房间');
 }

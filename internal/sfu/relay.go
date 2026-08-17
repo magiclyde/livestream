@@ -2,9 +2,13 @@ package sfu
 
 import (
 	"sync"
+	"time"
 
 	"github.com/pion/webrtc/v4"
 )
+
+// keyframeInterval 周期性向主播要关键帧的间隔。
+const keyframeInterval = 2 * time.Second
 
 // TrackRelay 把主播的一条轨道转发给所有观众，是 SFU 的核心单元。
 //
@@ -26,6 +30,10 @@ func (t *TrackRelay) start() { go t.loop() }
 
 func (t *TrackRelay) loop() {
 	defer close(t.done)
+	t.room.Logf("relay %s started", t.ID)
+	if t.remote.Kind() == webrtc.RTPCodecTypeVideo {
+		go t.requestKeyframes()
+	}
 	for {
 		pkt, _, err := t.remote.ReadRTP()
 		if err != nil {
@@ -40,6 +48,22 @@ func (t *TrackRelay) loop() {
 		case <-t.stop:
 			return
 		default:
+		}
+	}
+}
+
+// requestKeyframes 周期性向主播发送 PLI（关键帧请求）：
+// 观众中途加入或丢包后需要新的 I 帧才能恢复画面，而当前 relay
+// 不转发观众侧的 RTCP 反馈，这里用轮询兜底，保证恢复时间有上界。
+func (t *TrackRelay) requestKeyframes() {
+	ticker := time.NewTicker(keyframeInterval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-t.stop:
+			return
+		case <-ticker.C:
+			t.room.RequestKeyframe(t.remote)
 		}
 	}
 }

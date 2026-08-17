@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v4"
 )
 
@@ -65,6 +66,7 @@ func (r *Room) AddViewer(p *Peer) {
 
 // HandlePublisherTrack 在主播新轨道到达时创建转发器，并挂到所有在线观众上。
 func (r *Room) HandlePublisherTrack(p *Peer, remote *webrtc.TrackRemote) {
+	r.Logf("publisher track: %s/%s (%s)", remote.StreamID(), remote.ID(), remote.Codec().MimeType)
 	local, err := webrtc.NewTrackLocalStaticRTP(remote.Codec().RTPCodecCapability, remote.ID(), remote.StreamID())
 	if err != nil {
 		r.Logf("create local track for %s: %v", remote.ID(), err)
@@ -186,4 +188,19 @@ func (r *Room) HandleAnswer(p *Peer, answer webrtc.SessionDescription) {
 		return
 	}
 	p.markAnswered()
+}
+
+// RequestKeyframe 向主播发送 PLI，请编码器尽快输出一个关键帧。
+func (r *Room) RequestKeyframe(remote *webrtc.TrackRemote) {
+	r.mu.RLock()
+	pub := r.pub
+	r.mu.RUnlock()
+	if pub == nil {
+		return
+	}
+	if err := pub.PC.WriteRTCP([]rtcp.Packet{
+		&rtcp.PictureLossIndication{MediaSSRC: uint32(remote.SSRC())},
+	}); err != nil {
+		r.Logf("request keyframe for %s: %v", remote.ID(), err)
+	}
 }

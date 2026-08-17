@@ -68,3 +68,14 @@
   服务端新增 `-cert`/`-key` 参数，同时提供时用 `ListenAndServeTLS` 启动 HTTPS。
   本机联调：`mkcert 192.168.x.x` 签 IP 证书，iPhone 安装根证书后
   用 `go run . -addr 192.168.x.x:8443 -cert ... -key ...` 访问。
+- 2026-08-17 修前端 bug：iPhone 允许摄像头权限后本地预览变黑。
+  原因：`handleOffer` 里 `makePeer()` 先调 `cleanupPeer()`，而旧 `cleanupPeer()`
+  会把 `localStream` 的轨道 stop 掉并把预览置空，导致 offer 一到预览就黑、
+  主播轨道也没挂上服务端。修法：`cleanupPeer()` 只清理 RTCPeerConnection，
+  本地流停止拆到单独的 `stopLocalStream()`，仅在 `leave()` 时调用；
+  设置预览后显式 `play()` 兜底 iOS Safari 渲染。
+- 2026-08-17 观众端画面卡顿/重进黑屏：根因是 relay 纯转发 RTP、不做 RTCP
+  反馈转发，观众侧的 PLI/REMB 到不了主播，丢包后要等编码器自然出关键帧，
+  恢复时间无上界。修法：视频 relay 每 2s 通过 `pub.PC.WriteRTCP` 向主播发
+  PLI（`rtcp.PictureLossIndication{MediaSSRC: remote.SSRC()}`），兜底保证
+  关键帧间隔有上界。后续可升级为把观众 RTPSender 的 PLI/REMB 实时转发给主播。
