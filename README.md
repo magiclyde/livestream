@@ -18,6 +18,22 @@ go run .
 > 默认启用 Google 公共 STUN（跨网络时帮助打通 NAT）。仅本机/局域网演示可
 > 用 `go run . -stun ""` 关闭。
 
+## 构建与版本信息
+
+```bash
+make build                 # 输出 bin/livestream（注入 git commit / 构建时间）
+bin/livestream -version    # 查看构建信息
+```
+
+构建信息由 Makefile 通过 `-ldflags` 注入 `main` 包变量：
+
+- `version`：git tag 描述（无 tag 时为短 commit，工作区有改动时带 `-dirty`）；
+- `git commit`：当前提交的短哈希；
+- `build date`：UTC 构建时间；
+- `go version`：编译所用的 Go 版本（运行时读取，无需注入）。
+
+`make release` 额外开启静态链接并裁剪调试信息（`-s -w`）。
+
 ## 手机/局域网测试（HTTPS）
 
 浏览器（尤其 iPhone Safari）只在 HTTPS 或 localhost 下开放摄像头/麦克风，

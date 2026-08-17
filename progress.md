@@ -79,3 +79,9 @@
   恢复时间无上界。修法：视频 relay 每 2s 通过 `pub.PC.WriteRTCP` 向主播发
   PLI（`rtcp.PictureLossIndication{MediaSSRC: remote.SSRC()}`），兜底保证
   关键帧间隔有上界。后续可升级为把观众 RTPSender 的 PLI/REMB 实时转发给主播。
+- 2026-08-17 构建信息：`main.go` 新增 `version/gitCommit/buildDate/goVersion`
+  变量与 `-version` 参数；新增 `Makefile`，`make build` 经 `-ldflags` 注入
+  git commit（短哈希）、git tag 描述（无 tag 取短 commit、脏工作区加 `-dirty`）、
+  UTC 构建时间，输出到 `bin/livestream`；`make release` 额外静态链接并
+  `-s -w` 裁剪。`go run . -version` 或直接 `go build` 时版本字段为零值，
+  不影响正常启动。
