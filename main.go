@@ -19,6 +19,8 @@ var webFS embed.FS
 func main() {
 	addr := flag.String("addr", ":8080", "HTTP 监听地址")
 	stun := flag.String("stun", "stun:stun.l.google.com:19302", "逗号分隔的 STUN 地址；留空则禁用")
+	cert := flag.String("cert", "", "TLS 证书路径（PEM）；与 -key 同时提供则启用 HTTPS")
+	key := flag.String("key", "", "TLS 私钥路径（PEM）；与 -cert 同时提供则启用 HTTPS")
 	flag.Parse()
 
 	staticFS, err := fs.Sub(webFS, "web")
@@ -35,9 +37,22 @@ func main() {
 
 	handler := server.New(server.Config{STUNURIs: stunURIs}, staticFS)
 
-	log.Printf("livestream listening on http://%s", *addr)
+	scheme := "http"
+	if *cert != "" || *key != "" {
+		if *cert == "" || *key == "" {
+			log.Fatal("-cert 与 -key 必须同时提供")
+		}
+		scheme = "https"
+	}
+
+	log.Printf("livestream listening on %s://%s", scheme, *addr)
 	log.Printf("STUN: %v", stunURIs)
-	if err := http.ListenAndServe(*addr, handler); err != nil {
+	if scheme == "https" {
+		err = http.ListenAndServeTLS(*addr, *cert, *key, handler)
+	} else {
+		err = http.ListenAndServe(*addr, handler)
+	}
+	if err != nil {
 		log.Fatal(err)
 	}
 }

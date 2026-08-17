@@ -90,6 +90,11 @@ async function startPublish() {
   const room = requireRoom();
   if (!room) return;
 
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    setStatus('当前页面不是 HTTPS/localhost，浏览器禁用了摄像头/麦克风 API');
+    return;
+  }
+
   try {
     state.localStream = await navigator.mediaDevices.getUserMedia({
       video: { width: { ideal: 1280 }, height: { ideal: 720 } },

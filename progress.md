@@ -61,3 +61,10 @@
   修法：注册回调时用局部副本 `p`/`r` 固定引用，`OnTrack` 增加
   `Peer.Closed()` 守卫避免离开后误挂新轨道。教训：Pion 回调是异步的，
   闭包里永远不要引用后续会被置 nil 的外层变量。
+- 2026-08-17 iPhone Safari 实机验证：`http://局域网IP:8080` 属不安全上下文，
+  iOS Safari 下 `navigator.mediaDevices` 为 undefined，getUserMedia 直接报错，
+  且 Safari 生成的 answer 缺 ICE 凭证导致协商失败。修法：
+  前端在 `startPublish` 前置检查 `navigator.mediaDevices` 是否存在并给出明确提示；
+  服务端新增 `-cert`/`-key` 参数，同时提供时用 `ListenAndServeTLS` 启动 HTTPS。
+  本机联调：`mkcert 192.168.x.x` 签 IP 证书，iPhone 安装根证书后
+  用 `go run . -addr 192.168.x.x:8443 -cert ... -key ...` 访问。

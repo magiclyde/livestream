@@ -18,6 +18,19 @@ go run .
 > 默认启用 Google 公共 STUN（跨网络时帮助打通 NAT）。仅本机/局域网演示可
 > 用 `go run . -stun ""` 关闭。
 
+## 手机/局域网测试（HTTPS）
+
+浏览器（尤其 iPhone Safari）只在 HTTPS 或 localhost 下开放摄像头/麦克风，
+用 `http://局域网IP:8080` 访问会直接失败。推荐用 mkcert 签一张 IP 证书：
+
+```bash
+mkcert 192.168.x.x          # 生成证书，需先 mkcert -install 并信任根证书
+go run . -addr 192.168.x.x:8443 -cert 192.168.x.x+1.pem -key 192.168.x.x+1-key.pem
+```
+
+手机先安装并信任 mkcert 的根证书（`~/Library/Application Support/mkcert/rootCA.pem`），
+再访问 `https://192.168.x.x:8443`。`-cert`/`-key` 缺一不可，同时提供时自动切 HTTPS。
+
 ## 端到端自测（无头）
 
 ```bash
